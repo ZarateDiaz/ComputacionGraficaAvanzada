@@ -233,6 +233,7 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 
 	esfera1.init();
 	esfera1.setShader(&shaderMulLighting);
+	
 
 	modelRock.loadModel("../models/rock/rock.obj");
 	modelRock.setShader(&shaderMulLighting);
@@ -845,6 +846,7 @@ void applicationLoop() {
 		esfera1.setPosition(glm::vec3(3.0f, 2.0f, -10.0f));
 		esfera1.render();
 
+		
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, textureWallID);
 		shaderMulLighting.setInt("texture1", 0);
@@ -863,7 +865,7 @@ void applicationLoop() {
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, textureLandingPadID);
 		shaderMulLighting.setInt("texture1", 0);
-		shaderMulLighting.setVectorFloat2("scaleUV", glm::value_ptr(glm::vec2(2.0, 2.0)));
+		shaderMulLighting.setVectorFloat2("scaleUV", glm::value_ptr(glm::vec2(1.0, 2.0)));
 		boxLandingPad.render();
 		shaderMulLighting.setVectorFloat2("scaleUV", glm::value_ptr(glm::vec2(1.0, 1.0)));
 		glBindTexture(GL_TEXTURE_2D, 0);

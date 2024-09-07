@@ -115,6 +115,7 @@ glm::mat4 modelMatrixDart = glm::mat4(1.0f);
 float rotDartHead = 0.0, rotDartLeftArm = 0.0, rotDartLeftHand = 0.0, rotDartRightArm = 0.0, rotDartRightHand = 0.0, rotDartLeftLeg = 0.0, rotDartRightLeg = 0.0;
 int modelSelected = 0;
 bool enableCountSelected = true;
+float avance=0.1, giroEclipse=0.5;
 
 // Variables to animations keyframes
 bool saveFrame = false, availableSave = true;
@@ -915,9 +916,13 @@ void applicationLoop() {
 		modelLambo.render(modelMatrixLamboChasis);
 		glActiveTexture(GL_TEXTURE0);
 		glm::mat4 modelMatrixLamboLeftDor = glm::mat4(modelMatrixLamboChasis);
-		modelMatrixLamboLeftDor = glm::translate(modelMatrixLamboLeftDor, glm::vec3(1.08676, 0.707316, 0.982601));
+		//modelMatrixLamboLeftDor = glm::translate(modelMatrixLamboLeftDor, glm::vec3(1.08676, 0.707316, 0.982601));
+		modelMatrixLamboLeftDor = glm::translate(modelMatrixLamboLeftDor, 
+		glm::vec3(1.0866, 0.702655, 0.975953));
 		modelMatrixLamboLeftDor = glm::rotate(modelMatrixLamboLeftDor, glm::radians(dorRotCount), glm::vec3(1.0, 0, 0));
-		modelMatrixLamboLeftDor = glm::translate(modelMatrixLamboLeftDor, glm::vec3(-1.08676, -0.707316, -0.982601));
+		//modelMatrixLamboLeftDor = glm::translate(modelMatrixLamboLeftDor, glm::vec3(-1.08676, -0.707316, -0.982601));
+		modelMatrixLamboLeftDor = glm::translate(modelMatrixLamboLeftDor, 
+		glm::vec3(-1.0866, -0.702655, -0.975953));
 		modelLamboLeftDor.render(modelMatrixLamboLeftDor);
 		modelLamboRightDor.render(modelMatrixLamboChasis);
 		modelLamboFrontLeftWheel.render(modelMatrixLamboChasis);
@@ -994,8 +999,122 @@ void applicationLoop() {
 		glCullFace(oldCullFaceMode);
 		glDepthFunc(oldDepthFuncMode);
 
+		// Guardado de key frames de Dart Vader ********************************
+		if (record && modelSelected == 1){
+			matrixDartJoints.push_back(rotDartHead);
+			matrixDartJoints.push_back(rotDartLeftArm);
+			matrixDartJoints.push_back(rotDartLeftHand);
+			matrixDartJoints.push_back(rotDartRightArm);
+			matrixDartJoints.push_back(rotDartRightHand);
+			matrixDartJoints.push_back(rotDartLeftLeg);
+			matrixDartJoints.push_back(rotDartRightLeg);
+
+			if (saveFrame){
+				saveFrame = false;
+				appendFrame(myfile, matrixDartJoints);				
+			}
+			else if (keyFramesDartJoints.size()>0){
+				interpolationDartJoints = numPasosDartJoints / (float) maxNumPasosDartJoints;
+				numPasosDartJoints++;
+				if (interpolationDartJoints > 1.0){
+					interpolationDartJoints = 0.0;
+					numPasosDartJoints = 0;
+					indexFrameDartJoints = indexFrameDartJointsNext;
+					indexFrameDartJointsNext++;
+				}
+				if (indexFrameDartJointsNext > keyFramesDartJoints.size()-1){
+					indexFrameDartJointsNext = 0;
+					rotDartHead = interpolate(keyFramesDartJoints, indexFrameDartJoints,
+					indexFrameDartJointsNext,0,interpolationDartJoints);
+					rotDartLeftArm = interpolate(keyFramesDartJoints, indexFrameDartJoints,
+					indexFrameDartJointsNext,1,interpolationDartJoints);
+					rotDartLeftArm = interpolate(keyFramesDartJoints, indexFrameDartJoints,
+					indexFrameDartJointsNext,1,interpolationDartJoints);
+					
+
+
+				}
+			}
+			
+		}
+
 		// Constantes de animaciones
 		rotHelHelY += 0.5;
+
+		/************maquina de edos del eclipse ***********/
+		switch (state)
+		{
+		case 0:
+			if (numberAdvance==0)
+			
+				maxAdvance=64.0;	
+			
+			else if (numberAdvance==1)
+				maxAdvance=50.0;
+				else if(numberAdvance==2)
+				maxAdvance=45.0;
+				else if (numberAdvance==3)
+				maxAdvance=50.0;
+				else if(numberAdvance==4)
+				maxAdvance=45.0;
+			state=1;
+			break;
+		case 1: 
+			modelMatrixEclipse=glm::translate(modelMatrixEclipse,
+			glm::vec3(0,0,avance));
+			advanceCount+=avance;
+			rotWheelsX+=0.05;
+			rotWheelsY-=0.02;
+			if(rotWheelsY<=0){
+				rotWheelsY=0;
+			}
+			if(advanceCount>maxAdvance){
+				advanceCount=0;
+				state=2;
+				numberAdvance++;
+
+			}
+			
+		break;
+		case 2: 
+			modelMatrixEclipse=glm::translate(modelMatrixEclipse,
+			glm::vec3(0,0,0.025));
+			modelMatrixEclipse= glm::rotate(modelMatrixEclipse,
+			glm::radians(giroEclipse), glm::vec3(0 , 1 , 0)); 
+			rotCount+=giroEclipse;
+			rotWheelsY+=0.02;
+			if(rotWheelsY >=0.25){
+				rotWheelsY=0.25;
+			}
+			if(rotCount>=90.0f){
+				rotCount=0;
+				state=0;
+				if(numberAdvance>4)
+				numberAdvance=1;
+			}
+		break;
+		
+		default:
+			break;
+		}
+
+		//
+		switch (stateDoor)
+		{
+		case 0:
+			dorRotCount += 0.5;
+			if (dorRotCount >75)
+				stateDoor = 1;
+			break;
+		
+		case 1:
+			dorRotCount -= 0.5;
+			if (dorRotCount<0)
+				stateDoor = 0;
+		
+		default:
+			break;
+		}
 
 		glfwSwapBuffers(window);
 	}
