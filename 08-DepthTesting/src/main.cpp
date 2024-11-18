@@ -56,6 +56,8 @@ Shader shaderSkybox;
 Shader shaderMulLighting;
 //Shader para el terreno
 Shader shaderTerrain;
+//Shader Depthtesting
+Shader shaderDepthTesting;
 
 std::shared_ptr<Camera> camera(new ThirdPersonCamera());
 float distanceFromTarget = 7.0;
@@ -307,6 +309,7 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 	shaderSkybox.initialize("../Shaders/skyBox.vs", "../Shaders/skyBox.fs");
 	shaderMulLighting.initialize("../Shaders/iluminacion_textura_animation.vs", "../Shaders/multipleLights.fs");
 	shaderTerrain.initialize("../Shaders/terrain.vs", "../Shaders/terrain.fs");
+	shaderDepthTesting.initialize("../Shaders/depthTesting.vs", "../Shaders/depthTesting.fs");
 
 	// Inicializacion de los objetos.
 	skyboxSphere.init();
@@ -326,116 +329,116 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 	rayModel.setColor(glm::vec4(1.0));
 
 	boxCesped.init();
-	boxCesped.setShader(&shaderMulLighting);
+	boxCesped.setShader(&shaderDepthTesting);
 
 	boxWalls.init();
-	boxWalls.setShader(&shaderMulLighting);
+	boxWalls.setShader(&shaderDepthTesting);
 
 	boxHighway.init();
-	boxHighway.setShader(&shaderMulLighting);
+	boxHighway.setShader(&shaderDepthTesting);
 
 	boxLandingPad.init();
-	boxLandingPad.setShader(&shaderMulLighting);
+	boxLandingPad.setShader(&shaderDepthTesting);
 
 	esfera1.init();
-	esfera1.setShader(&shaderMulLighting);
+	esfera1.setShader(&shaderDepthTesting);
 
 	modelRock.loadModel("../models/rock/rock.obj");
-	modelRock.setShader(&shaderMulLighting);
+	modelRock.setShader(&shaderDepthTesting);
 
 	modelAircraft.loadModel("../models/Aircraft_obj/E 45 Aircraft_obj.obj");
-	modelAircraft.setShader(&shaderMulLighting);
+	modelAircraft.setShader(&shaderDepthTesting);
 
 	// Eclipse
 	modelEclipseChasis.loadModel("../models/Eclipse/2003eclipse_chasis.obj");
-	modelEclipseChasis.setShader(&shaderMulLighting);
+	modelEclipseChasis.setShader(&shaderDepthTesting);
 	modelEclipseFrontalWheels.loadModel("../models/Eclipse/2003eclipse_frontal_wheels.obj");
-	modelEclipseFrontalWheels.setShader(&shaderMulLighting);
+	modelEclipseFrontalWheels.setShader(&shaderDepthTesting);
 	modelEclipseRearWheels.loadModel("../models/Eclipse/2003eclipse_rear_wheels.obj");
-	modelEclipseRearWheels.setShader(&shaderMulLighting);
+	modelEclipseRearWheels.setShader(&shaderDepthTesting);
 	// Helicopter
 	modelHeliChasis.loadModel("../models/Helicopter/Mi_24_chasis.obj");
-	modelHeliChasis.setShader(&shaderMulLighting);
+	modelHeliChasis.setShader(&shaderDepthTesting);
 	modelHeliHeli.loadModel("../models/Helicopter/Mi_24_heli.obj");
-	modelHeliHeli.setShader(&shaderMulLighting);
+	modelHeliHeli.setShader(&shaderDepthTesting);
 	modelHeliHeliBack.loadModel("../models/Helicopter/Mi_24_heli_back.obj");
-	modelHeliHeliBack.setShader(&shaderMulLighting);
+	modelHeliHeliBack.setShader(&shaderDepthTesting);
 	// Lamborginhi
 	modelLambo.loadModel("../models/Lamborginhi_Aventador_OBJ/Lamborghini_Aventador_chasis.obj");
-	modelLambo.setShader(&shaderMulLighting);
+	modelLambo.setShader(&shaderDepthTesting);
 	modelLamboLeftDor.loadModel("../models/Lamborginhi_Aventador_OBJ/Lamborghini_Aventador_left_dor.obj");
-	modelLamboLeftDor.setShader(&shaderMulLighting);
+	modelLamboLeftDor.setShader(&shaderDepthTesting);
 	modelLamboRightDor.loadModel("../models/Lamborginhi_Aventador_OBJ/Lamborghini_Aventador_right_dor.obj");
-	modelLamboRightDor.setShader(&shaderMulLighting);
+	modelLamboRightDor.setShader(&shaderDepthTesting);
 	modelLamboFrontLeftWheel.loadModel("../models/Lamborginhi_Aventador_OBJ/Lamborghini_Aventador_front_left_wheel.obj");
-	modelLamboFrontLeftWheel.setShader(&shaderMulLighting);
+	modelLamboFrontLeftWheel.setShader(&shaderDepthTesting);
 	modelLamboFrontRightWheel.loadModel("../models/Lamborginhi_Aventador_OBJ/Lamborghini_Aventador_front_right_wheel.obj");
-	modelLamboFrontRightWheel.setShader(&shaderMulLighting);
+	modelLamboFrontRightWheel.setShader(&shaderDepthTesting);
 	modelLamboRearLeftWheel.loadModel("../models/Lamborginhi_Aventador_OBJ/Lamborghini_Aventador_rear_left_wheel.obj");
-	modelLamboRearLeftWheel.setShader(&shaderMulLighting);
+	modelLamboRearLeftWheel.setShader(&shaderDepthTesting);
 	modelLamboRearRightWheel.loadModel("../models/Lamborginhi_Aventador_OBJ/Lamborghini_Aventador_rear_right_wheel.obj");
-	modelLamboRearRightWheel.setShader(&shaderMulLighting);
+	modelLamboRearRightWheel.setShader(&shaderDepthTesting);
 
 	// Dart Lego
 	modelDartLegoBody.loadModel("../models/LegoDart/LeoDart_body.obj");
-	modelDartLegoBody.setShader(&shaderMulLighting);
+	modelDartLegoBody.setShader(&shaderDepthTesting);
 	modelDartLegoMask.loadModel("../models/LegoDart/LeoDart_mask.obj");
-	modelDartLegoMask.setShader(&shaderMulLighting);
+	modelDartLegoMask.setShader(&shaderDepthTesting);
 	modelDartLegoHead.loadModel("../models/LegoDart/LeoDart_head.obj");
-	modelDartLegoHead.setShader(&shaderMulLighting);
+	modelDartLegoHead.setShader(&shaderDepthTesting);
 	modelDartLegoLeftArm.loadModel("../models/LegoDart/LeoDart_left_arm.obj");
-	modelDartLegoLeftArm.setShader(&shaderMulLighting);
+	modelDartLegoLeftArm.setShader(&shaderDepthTesting);
 	modelDartLegoRightArm.loadModel("../models/LegoDart/LeoDart_right_arm.obj");
-	modelDartLegoRightArm.setShader(&shaderMulLighting);
+	modelDartLegoRightArm.setShader(&shaderDepthTesting);
 	modelDartLegoLeftHand.loadModel("../models/LegoDart/LeoDart_left_hand.obj");
-	modelDartLegoLeftHand.setShader(&shaderMulLighting);
+	modelDartLegoLeftHand.setShader(&shaderDepthTesting);
 	modelDartLegoRightHand.loadModel("../models/LegoDart/LeoDart_right_hand.obj");
-	modelDartLegoRightHand.setShader(&shaderMulLighting);
+	modelDartLegoRightHand.setShader(&shaderDepthTesting);
 	modelDartLegoLeftLeg.loadModel("../models/LegoDart/LeoDart_left_leg.obj");
-	modelDartLegoLeftLeg.setShader(&shaderMulLighting);
+	modelDartLegoLeftLeg.setShader(&shaderDepthTesting);
 	modelDartLegoRightLeg.loadModel("../models/LegoDart/LeoDart_right_leg.obj");
-	modelDartLegoRightLeg.setShader(&shaderMulLighting);
+	modelDartLegoRightLeg.setShader(&shaderDepthTesting);
 
 	
 	// Buzz
 	modelBuzzTorso.loadModel("../models/buzz/buzzlightyTorso.obj");
-	modelBuzzTorso.setShader(&shaderMulLighting);
+	modelBuzzTorso.setShader(&shaderDepthTesting);
 	modelBuzzHead.loadModel("../models/buzz/buzzlightyHead.obj");
-	modelBuzzHead.setShader(&shaderMulLighting);
+	modelBuzzHead.setShader(&shaderDepthTesting);
 	modelBuzzLeftArm.loadModel("../models/buzz/buzzlightyLeftArm.obj");
-	modelBuzzLeftArm.setShader(&shaderMulLighting);
+	modelBuzzLeftArm.setShader(&shaderDepthTesting);
 	modelBuzzLeftForeArm.loadModel("../models/buzz/buzzlightyLeftForearm.obj");
-	modelBuzzLeftForeArm.setShader(&shaderMulLighting);
+	modelBuzzLeftForeArm.setShader(&shaderDepthTesting);
 	modelBuzzLeftHand.loadModel("../models/buzz/buzzlightyLeftHand.obj");
-	modelBuzzLeftHand.setShader(&shaderMulLighting);
+	modelBuzzLeftHand.setShader(&shaderDepthTesting);
 
 	//Lamps models
 	modelLamp1.loadModel("../models/Street-Lamp-Black/objLamp.obj");
-	modelLamp1.setShader(&shaderMulLighting);
+	modelLamp1.setShader(&shaderDepthTesting);
 	modelLamp2.loadModel("../models/Street_Light/Lamp.obj");
-	modelLamp2.setShader(&shaderMulLighting);
+	modelLamp2.setShader(&shaderDepthTesting);
 	modelLampPost2.loadModel("../models/Street_Light/LampPost.obj");
-	modelLampPost2.setShader(&shaderMulLighting);
+	modelLampPost2.setShader(&shaderDepthTesting);
 
 	// Mayow
 	mayowModelAnimate.loadModel("../models/mayow/personaje2.fbx");
-	mayowModelAnimate.setShader(&shaderMulLighting);
+	mayowModelAnimate.setShader(&shaderDepthTesting);
 	
 	// Cowboy
 	cowboyModelAnimate.loadModel("../models/cowboy/Character Running.fbx");
-	cowboyModelAnimate.setShader(&shaderMulLighting);
+	cowboyModelAnimate.setShader(&shaderDepthTesting);
 
 	// Guardian
 	guardianModelAnimate.loadModel("../models/boblampclean/boblampclean.md5mesh");
-	guardianModelAnimate.setShader(&shaderMulLighting);
+	guardianModelAnimate.setShader(&shaderDepthTesting);
 
 	// Cyborg
 	cyborgModelAnimate.loadModel("../models/cyborg/cyborg.fbx");
-	cyborgModelAnimate.setShader(&shaderMulLighting);
+	cyborgModelAnimate.setShader(&shaderDepthTesting);
 
 	// Terreno
 	terrain.init();
-	terrain.setShader(&shaderTerrain);
+	terrain.setShader(&shaderDepthTesting);
 
 	camera->setPosition(glm::vec3(0.0, 3.0, 4.0));
 	camera->setDistanceFromTarget(distanceFromTarget);
@@ -689,6 +692,7 @@ void destroy() {
 	shaderMulLighting.destroy();
 	shaderSkybox.destroy();
 	shaderTerrain.destroy();
+	shaderDepthTesting.destroy();
 
 	// Basic objects Delete
 	skyboxSphere.destroy();
@@ -1128,6 +1132,11 @@ void applicationLoop() {
 				glm::value_ptr(projection));
 		shaderTerrain.setMatrix4("view", 1, false,
 				glm::value_ptr(view));
+		//sttea matriz de vista y proyeccion al sahder que visualiza el buffer de profundidad 
+		shaderDepthTesting.setMatrix4("projection", 1, false, 
+										glm::value_ptr(projection));
+		shaderDepthTesting.setMatrix4("view",1,false,
+								glm::value_ptr(view));
 
 		/*******************************************
 		 * Propiedades Luz direccional
@@ -1510,7 +1519,7 @@ void applicationLoop() {
 		rockCollider.ratio = modelRock.getSbb().ratio * 1.0;
 		addOrUpdateColliders(collidersSBB, "rock", rockCollider, matrixModelRock);
 
-		// Lamps1 colliders
+		// Lamps1 colliders código de colisiones
 		for (int i = 0; i < lamp1Position.size(); i++){
 			AbstractModel::OBB lampCollider;
 			glm::mat4 modelMatrixColliderLamp = glm::mat4(1.0);
@@ -1527,7 +1536,7 @@ void applicationLoop() {
 			std::get<0>(collidersOBB.find("lamp1-" + std::to_string(i))->second) = lampCollider;
 		}
 
-		// Lamps2 colliders
+		// Lamps2 colliders código de colisiones 
 		for (int i = 0; i < lamp2Position.size(); i++){
 			AbstractModel::OBB lampCollider;
 			glm::mat4 modelMatrixColliderLamp = glm::mat4(1.0);
@@ -1660,7 +1669,7 @@ void applicationLoop() {
 				}
 			}
 		}
-
+		//colision del rayo del modelo principal 
 		glm::mat4 modelMatrixRayMay = glm::mat4(modelMatrixMayow);
 		modelMatrixRayMay = glm::translate(modelMatrixRayMay, glm::vec3(0, 1, 0));
 		float maxDistanceRay = 10.0;
@@ -1685,6 +1694,26 @@ void applicationLoop() {
 				<< std::endl;
 			}
 		}
+
+		//picking para seleccionar objeto 
+		glm::vec3 o=glm::unProject(glm::vec3(lastMousePosX,lastMousePosY,0.0f ),
+		view, projection, glm::vec4(0.0,0.0,screenWidth, screenHeight) 
+		);
+		glm::vec3 t=glm::unProject(
+				glm::vec3(lastMousePosX,lastMousePosY,1.0f),
+				view, projection, glm::vec4(0.0,0.0,screenWidth, screenHeight) 
+
+		);
+		glm::vec3 d=glm::normalize(t-o);
+		for (itSBB = collidersSBB.begin(); itSBB != collidersSBB.end(); itSBB++) {
+			float tRint;
+			if (raySphereIntersect(o, t, d,
+				std::get<0>(itSBB->second), tRint)) {
+				std::cout << "Collision del rayo con el modelo " << itSBB->first 
+				<< std::endl;
+			}
+		}
+
 		/*std::map<std::string, std::tuple<AbstractModel::OBB, glm::mat4, glm::mat4>>::
 			iterator itOBB;
 		for (itOBB = collidersOBB.begin(); itOBB != collidersOBB.end(); itOBB++) {

@@ -47,6 +47,8 @@ Shader shader;
 Shader shaderSkybox;
 //Shader con multiples luces
 Shader shaderMulLighting;
+//shader con varias texturas
+Shader shaderMultiplesTexturas;
 
 std::shared_ptr<FirstPersonCamera> camera(new FirstPersonCamera());
 
@@ -104,6 +106,7 @@ Model modelBuzzRightWing2;
 
 GLuint textureCespedID, textureWallID, textureWindowID, textureHighwayID, textureLandingPadID;
 GLuint skyboxTextureID;
+GLuint textureWaterID, textureSpongeID;
 
 GLenum types[6] = {
 GL_TEXTURE_CUBE_MAP_POSITIVE_X,
@@ -137,7 +140,8 @@ float rotDartHead = 0.0, rotDartLeftArm = 0.0, rotDartLeftHand = 0.0, rotDartRig
 float rotBuzzHead=0.0, rotBuzzLeftarm=0.0, rotBuzzLeftForeArm=0.0, rotBuzzLeftHand=0.0, rotBuzzLeftThigh=0.0, rotBuzzRightArm=0.0, rotBuzzRightForeArm=0.0,rotBuzzRightHand=0.0, rotBuzzRightLeg=0.0,rotBuzzLeftLeg=0.0;
 int modelSelected = 0;
 bool enableCountSelected = true;
-float avance=0.1, giroEclipse=0.5;
+float avance=0.1, giroEclipse=0.5, giroLamb=0.5, detener=0.0;
+float avanceL=0.1;
 
 // Variables to animations keyframes
 bool saveFrame = false, availableSave = true;
@@ -249,6 +253,7 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 	shader.initialize("../Shaders/colorShader.vs", "../Shaders/colorShader.fs");
 	shaderSkybox.initialize("../Shaders/skyBox.vs", "../Shaders/skyBox.fs");
 	shaderMulLighting.initialize("../Shaders/iluminacion_texture_res.vs", "../Shaders/multipleLights.fs");
+	shaderMultiplesTexturas.initialize("../Shaders/iluminacion_texture_res.vs", "../Shaders/multipleLightsVariasTexturas.fs");
 
 	// Inicializacion de los objetos.
 	skyboxSphere.init();
@@ -268,7 +273,7 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 	boxLandingPad.setShader(&shaderMulLighting);
 
 	esfera1.init();
-	esfera1.setShader(&shaderMulLighting);
+	esfera1.setShader(&shaderMultiplesTexturas);
 
 	modelRock.loadModel("../models/rock/rock.obj");
 	modelRock.setShader(&shaderMulLighting);
@@ -525,7 +530,47 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 		std::cout << "Fallo la carga de textura" << std::endl;
 	textureLandingPad.freeImage(); // Liberamos memoria
 
+	// Definiendo la textura
+	Texture textureWater("../Textures/water.jpg");
+	textureWater.loadImage(); // Cargar la textura
+	glGenTextures(1, &textureWaterID); // Creando el id de la textura del landingpad
+	glBindTexture(GL_TEXTURE_2D, textureWaterID); // Se enlaza la textura
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); // Wrapping en el eje u
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT); // Wrapping en el eje v
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); // Filtering de minimización
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); // Filtering de maximimizacion
+	if(textureWater.getData()){
+		// Transferir los datos de la imagen a la tarjeta
+		glTexImage2D(GL_TEXTURE_2D, 0, textureWater.getChannels() == 3 ? GL_RGB : GL_RGBA, textureWater.getWidth(), textureWater.getHeight(), 0,
+		textureWater.getChannels() == 3 ? GL_RGB : GL_RGBA, GL_UNSIGNED_BYTE, textureWater.getData());
+		glGenerateMipmap(GL_TEXTURE_2D);
+	}
+	else 
+		std::cout << "Fallo la carga de textura" << std::endl;
+	textureWater.freeImage(); // Liberamos memoria
+
+	// Definiendo la texturaSponge
+	Texture textureSponge("../Textures/test.png");
+	textureSponge.loadImage(); // Cargar la textura
+	glGenTextures(1, &textureSpongeID); // Creando el id de la textura del landingpad
+	glBindTexture(GL_TEXTURE_2D, textureSpongeID); // Se enlaza la textura
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); // Wrapping en el eje u
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT); // Wrapping en el eje v
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); // Filtering de minimización
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); // Filtering de maximimizacion
+	if(textureSponge.getData()){
+		// Transferir los datos de la imagen a la tarjeta
+		glTexImage2D(GL_TEXTURE_2D, 0, textureSponge.getChannels() == 3 ? GL_RGB : GL_RGBA, textureSponge.getWidth(), textureSponge.getHeight(), 0,
+		textureSponge.getChannels() == 3 ? GL_RGB : GL_RGBA, GL_UNSIGNED_BYTE, textureSponge.getData());
+		glGenerateMipmap(GL_TEXTURE_2D);
+	}
+	else 
+		std::cout << "Fallo la carga de textura" << std::endl;
+	textureSponge.freeImage(); // Liberamos memoria
 }
+
+
+
 
 void destroy() {
 	glfwDestroyWindow(window);
@@ -537,6 +582,7 @@ void destroy() {
 	shader.destroy();
 	shaderMulLighting.destroy();
 	shaderSkybox.destroy();
+	shaderMultiplesTexturas.destroy();
 
 	// Basic objects Delete
 	skyboxSphere.destroy();
@@ -835,12 +881,15 @@ void applicationLoop() {
 	modelMatrixEclipse = glm::translate(modelMatrixEclipse, glm::vec3(27.5, 0, 30.0));
 	modelMatrixEclipse = glm::rotate(modelMatrixEclipse, glm::radians(180.0f), glm::vec3(0, 1, 0));
 	int state = 0;
-	float advanceCount = 0.0;
-	float rotCount = 0.0;
+	int stateL=0;
+	float advanceCount = 0.0, advanceCountL = 0.0;
+	float rotCount = 0.0, rotCountL=0.0;
 	float rotWheelsX = 0.0;
 	float rotWheelsY = 0.0;
-	int numberAdvance = 0;
-	int maxAdvance = 0.0;
+	float rotWheelsLY=0.0;
+	float rotWheelsLX=0.0;
+	int numberAdvance = 0, numberAdvanceL=0;
+	int maxAdvance = 0.0, maxAdvanceL=0.0;
 
 	matrixModelRock = glm::translate(matrixModelRock, glm::vec3(-3.0, 0.0, 2.0));
 
@@ -896,6 +945,11 @@ void applicationLoop() {
 					glm::value_ptr(projection));
 		shaderMulLighting.setMatrix4("view", 1, false,
 				glm::value_ptr(view));
+		//Settea la matriz de vista y projection al shader 
+		shaderMultiplesTexturas.setMatrix4("projection", 1, false,
+					glm::value_ptr(projection));
+		shaderMultiplesTexturas.setMatrix4("view", 1, false,
+				glm::value_ptr(view));
 
 		/*******************************************
 		 * Propiedades Luz direccional
@@ -906,15 +960,22 @@ void applicationLoop() {
 		shaderMulLighting.setVectorFloat3("directionalLight.light.specular", glm::value_ptr(glm::vec3(0.9, 0.9, 0.9)));
 		shaderMulLighting.setVectorFloat3("directionalLight.direction", glm::value_ptr(glm::vec3(-1.0, 0.0, 0.0)));
 
+		shaderMultiplesTexturas.setVectorFloat3("viewPos", glm::value_ptr(camera->getPosition()));
+		shaderMultiplesTexturas.setVectorFloat3("directionalLight.light.ambient", glm::value_ptr(glm::vec3(0.3, 0.3, 0.3)));
+		shaderMultiplesTexturas.setVectorFloat3("directionalLight.light.diffuse", glm::value_ptr(glm::vec3(0.7, 0.7, 0.7)));
+		shaderMultiplesTexturas.setVectorFloat3("directionalLight.light.specular", glm::value_ptr(glm::vec3(0.9, 0.9, 0.9)));
+		shaderMultiplesTexturas.setVectorFloat3("directionalLight.direction", glm::value_ptr(glm::vec3(-1.0, 0.0, 0.0)));
 		/*******************************************
 		 * Propiedades SpotLights
 		 *******************************************/
 		shaderMulLighting.setInt("spotLightCount", 0);
+		shaderMultiplesTexturas.setInt("spotLightCount", 0);
 
 		/*******************************************
 		 * Propiedades PointLights
 		 *******************************************/
 		shaderMulLighting.setInt("pointLightCount", 0);
+		shaderMultiplesTexturas.setInt("pointLightCount", 0);
 
 		/*******************************************
 		 * Cesped
@@ -1011,9 +1072,13 @@ void applicationLoop() {
 		/*******************************************
 		 * Esfera 1
 		*********************************************/
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, textureHighwayID);
-		shaderMulLighting.setInt("texture1", 0);
+		glActiveTexture(GL_TEXTURE5);
+		glBindTexture(GL_TEXTURE_2D, textureWaterID);
+		shaderMultiplesTexturas.setInt("texture1", 5);
+		glActiveTexture(GL_TEXTURE10);
+		glBindTexture(GL_TEXTURE_2D,textureSpongeID);
+		shaderMultiplesTexturas.setInt("texture2",10);
+
 		esfera1.setScale(glm::vec3(3.0, 3.0, 3.0));
 		esfera1.setPosition(glm::vec3(3.0f, 2.0f, -10.0f));
 		esfera1.render();
@@ -1094,12 +1159,41 @@ void applicationLoop() {
 		//modelMatrixLamboLeftDor = glm::translate(modelMatrixLamboLeftDor, glm::vec3(-1.08676, -0.707316, -0.982601));
 		modelMatrixLamboLeftDor = glm::translate(modelMatrixLamboLeftDor, 
 		glm::vec3(-1.0866, -0.702655, -0.975953));
+		
+		glm::mat4 modelMatrixLamboRightDor=glm::mat4(modelMatrixLamboChasis);
+		modelMatrixLamboRightDor = glm::translate(modelMatrixLamboRightDor, 
+		glm::vec3(-1.0866, 0.702655, -0.975953));
+		modelMatrixLamboRightDor = glm::translate(modelMatrixLamboRightDor, 
+		glm::vec3(1.0866, -0.702655, 0.975953));
+		
+		glm::mat4 modelMatrixFrontLeftWheel= glm::mat4(modelMatrixLamboChasis);
+		modelMatrixFrontLeftWheel=glm::translate(modelMatrixFrontLeftWheel, glm::vec3(0.0 ,0.402759 ,1.4013 ));
+		modelMatrixFrontLeftWheel=glm::rotate(modelMatrixFrontLeftWheel, rotWheelsLY, glm::vec3(0,1,0));
+		modelMatrixFrontLeftWheel=glm::rotate(modelMatrixFrontLeftWheel, rotWheelsLX, glm::vec3(1,0,0));
+		modelMatrixFrontLeftWheel=glm::translate(modelMatrixFrontLeftWheel, glm::vec3(0.0 ,-0.402759,-1.4013 ));
+
+		glm::mat4 modelMatrixFrontRighttWheel= glm::mat4(modelMatrixLamboChasis);
+		modelMatrixFrontRighttWheel=glm::translate(modelMatrixFrontRighttWheel, glm::vec3(0.0 ,0.402759      ,1.4013    ));
+		modelMatrixFrontRighttWheel=glm::rotate(modelMatrixFrontRighttWheel, rotWheelsLY, glm::vec3(0,1,0));
+		modelMatrixFrontRighttWheel=glm::rotate(modelMatrixFrontRighttWheel, rotWheelsLX, glm::vec3(1,0,0));
+		modelMatrixFrontRighttWheel=glm::translate(modelMatrixFrontRighttWheel, glm::vec3(0.0 ,-0.402759,-1.4013   ));
+
+		glm::mat4 modelMatrixRearLefttWheel= glm::mat4(modelMatrixLamboChasis);
+		modelMatrixRearLefttWheel=glm::translate(modelMatrixRearLefttWheel, glm::vec3(0.0 ,0.392848 ,-1.61082  ));
+		modelMatrixRearLefttWheel=glm::rotate(modelMatrixRearLefttWheel, rotWheelsLX, glm::vec3(1,0,0));
+		modelMatrixRearLefttWheel=glm::translate(modelMatrixRearLefttWheel, glm::vec3(0.0 ,-0.392848 ,1.61082   ));
+
+		glm::mat4 modelMatrixRearRightWheel= glm::mat4(modelMatrixLamboChasis);
+		modelMatrixRearRightWheel=glm::translate(modelMatrixRearRightWheel, glm::vec3(0.0 ,0.392848 ,-1.61082));
+		modelMatrixRearRightWheel=glm::rotate(modelMatrixRearRightWheel, rotWheelsLX, glm::vec3(1,0,0));
+		modelMatrixRearRightWheel=glm::translate(modelMatrixRearRightWheel, glm::vec3(0.0 ,-0.392848 ,1.61082 ));
+
 		modelLamboLeftDor.render(modelMatrixLamboLeftDor);
-		modelLamboRightDor.render(modelMatrixLamboChasis);
-		modelLamboFrontLeftWheel.render(modelMatrixLamboChasis);
-		modelLamboFrontRightWheel.render(modelMatrixLamboChasis);
-		modelLamboRearLeftWheel.render(modelMatrixLamboChasis);
-		modelLamboRearRightWheel.render(modelMatrixLamboChasis);
+		modelLamboRightDor.render(modelMatrixLamboRightDor);
+		modelLamboFrontLeftWheel.render(modelMatrixFrontLeftWheel);
+		modelLamboFrontRightWheel.render(modelMatrixFrontRighttWheel);
+		modelLamboRearLeftWheel.render(modelMatrixRearLefttWheel);
+		modelLamboRearRightWheel.render(modelMatrixRearRightWheel);
 		// Se regresa el cull faces IMPORTANTE para las puertas
 		glEnable(GL_CULL_FACE);
 
@@ -1242,6 +1336,25 @@ void applicationLoop() {
 		modelMatrixRightFoot= glm::rotate(modelMatrixRightFoot, rotBuzzRightLeg, glm::vec3(0,0,1) );
 		modelMatrixRightFoot= glm::translate(modelMatrixRightFoot, glm::vec3(0.070712  ,-0.106768 , 0.004202 ));
 		modelBuzzRightFoot.render(modelMatrixRightFoot);
+		glm::mat4 modelMatrixLeftWing1=glm::mat4(modelMatrixTorso);
+		modelMatrixLeftWing1= glm::translate(modelMatrixLeftWing1,glm::vec3(0.0 , 0.0    ,0.01666     ));
+		modelMatrixLeftFoot= glm::translate(modelMatrixLeftWing1, glm::vec3(0.0  , 0.0   ,-0.01666  ));
+		modelBuzzleftWing1.render(modelMatrixLeftWing1);
+
+		glm::mat4 modelMatrixLeftWing2=glm::mat4(modelMatrixLeftWing1);
+		modelMatrixLeftWing2= glm::translate(modelMatrixLeftWing2,glm::vec3(0.0  ,0.0   , 0.0  ));
+		modelMatrixLeftWing2= glm::translate(modelMatrixLeftWing2, glm::vec3(0.0 , 0.0    , 0.0 ));
+		modelBuzzleftWing2.render(modelMatrixLeftWing2);
+
+		glm::mat4 modelMatrixRightWing1=glm::mat4(modelMatrixTorso);
+		modelMatrixRightWing1= glm::translate(modelMatrixRightWing1,glm::vec3(0.0 , 0.0    ,0.01666     ));
+		modelMatrixRightFoot= glm::translate(modelMatrixRightWing1, glm::vec3(0.0  , 0.0   ,-0.01666  ));
+		modelBuzzRightWing1.render(modelMatrixRightWing1);
+
+		glm::mat4 modelMatrixRightWing2=glm::mat4(modelMatrixRightWing1);
+		modelMatrixRightWing2= glm::translate(modelMatrixRightWing2,glm::vec3(0.0  ,0.0   , 0.0  ));
+		modelMatrixRightWing2= glm::translate(modelMatrixRightWing2, glm::vec3(0.0 , 0.0    , 0.0 ));
+		modelBuzzRightWing2.render(modelMatrixRightWing2);
 
 		/*glm::mat4 modelMatrixLeftWing1=glm::mat4(modelMatrixTorso);
 		modelMatrixLeftWing1= glm::translate(modelMatrixLeftWing1,glm::vec3(0.0 , 0.0    ,0.01666     ));
@@ -1315,7 +1428,8 @@ void applicationLoop() {
 		/************maquina de edos del eclipse ***********/
 		switch (state)
 		{
-		case 0:
+			
+		case 0:  //distancias
 			if (numberAdvance==0)
 			
 				maxAdvance=64.0;	
@@ -1334,11 +1448,11 @@ void applicationLoop() {
 			modelMatrixEclipse=glm::translate(modelMatrixEclipse,
 			glm::vec3(0,0,avance));
 			advanceCount+=avance;
-			rotWheelsX+=0.05;
-			rotWheelsY-=0.02;
+			rotWheelsX+=0.05; //las llanatas giren cuando avance
+			rotWheelsY-=0.02; //es negativo por el sentido
 			if(rotWheelsY<=0){
 				rotWheelsY=0;
-			}
+			} //se reinicia el valor cuando gira 
 			if(advanceCount>maxAdvance){
 				advanceCount=0;
 				state=2;
@@ -1355,11 +1469,11 @@ void applicationLoop() {
 			rotCount+=giroEclipse;
 			rotWheelsY+=0.02;
 			if(rotWheelsY >=0.25){
-				rotWheelsY=0.25;
+				rotWheelsY=0.25;  //cuando llegue a un maximo no se tuerza la llanta 
 			}
 			if(rotCount>=90.0f){
 				rotCount=0;
-				state=0;
+				state=0; //finalice girando
 				if(numberAdvance>4)
 				numberAdvance=1;
 			}
@@ -1368,12 +1482,93 @@ void applicationLoop() {
 		default:
 			break;
 		}
+		
+	//lamborgini maquina de edos 
+		switch(stateL)
+		{
+			case 0: 
+			if (numberAdvanceL==0)
+				maxAdvanceL=10.0;	
+			else if (numberAdvanceL==1)
+				maxAdvanceL=40.0;
+				else if(numberAdvanceL==2)
+				maxAdvanceL=40.0;
+				else if (numberAdvanceL==3)
+				maxAdvanceL=40.0;
+				else if(numberAdvanceL==4)
+				maxAdvanceL=40.0;
+			stateL=1;
 
-		//
-		switch (stateDoor)
+			break;
+			case 1: 
+			modelMatrixLambo=glm::translate(modelMatrixLambo,
+			glm::vec3(0,0,avanceL));
+			
+			advanceCountL+=avanceL;
+			rotWheelsLX+=0.05;
+			rotWheelsLY-=0.02;
+			if(rotWheelsLY<=0){
+				rotWheelsLY=0;
+			} 
+			if(advanceCountL>maxAdvanceL){
+				advanceCountL=0;
+				numberAdvanceL++;
+				stateL=2;
+			}
+			break; 
+
+			case 2: 
+			modelMatrixLambo=glm::translate(modelMatrixLambo,
+			glm::vec3(0,0,0.025));
+			modelMatrixLambo= glm::rotate(modelMatrixLambo, glm::radians(-giroLamb), glm::vec3(0,1,0));
+			rotCountL+=giroLamb;
+			rotWheelsLY+=0.02;
+			if(rotWheelsLY >=0.15){
+				rotWheelsLY=0.15;  //cuando llegue a un maximo no se tuerza la llanta 
+			}
+			if (rotCountL>=90.0f && numberAdvance<4){
+				rotCountL=0;
+				stateL=0;
+			}
+			if (numberAdvanceL>4)
+			stateL=3;
+			
+			break;
+			case 3: 
+        	// Reinicia las variables de control
+        	//numberAdvanceL = 0;
+        	advanceCountL = 0;
+        	rotCountL = 0;
+        	stateL = 4; // Puede quedarse en este estado o reiniciar el recorrido
+			
+			break; 
+			case 4: 
+			modelMatrixLambo=glm::translate(modelMatrixLambo,
+			glm::vec3(0,0,advanceCountL));
+			modelMatrixLambo= glm::rotate(modelMatrixLambo, glm::radians(rotCountL), glm::vec3(0,1,0));
+			stateL=5;
+			case 5: 
+			dorRotCount += 0.5; 
+			if (dorRotCount >75)
+				stateL = 6;
+			break;
+			case 6: 
+			dorRotCount -= 0.5;
+			if (dorRotCount<0)
+				stateL=7;
+				break;
+			case 7: 
+			dorRotCount=0;
+			break; 
+		default:
+		break; 
+		} 
+		
+		//maquina de edos lambo puerta
+		/*switch (stateDoor)
 		{
 		case 0:
-			dorRotCount += 0.5;
+			dorRotCount += 0.5; 
 			if (dorRotCount >75)
 				stateDoor = 1;
 			break;
@@ -1385,7 +1580,7 @@ void applicationLoop() {
 		
 		default:
 			break;
-		}
+		}*/
 
 		glfwSwapBuffers(window);
 	}

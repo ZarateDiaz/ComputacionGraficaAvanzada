@@ -216,6 +216,13 @@ std::vector<float> lamp2Orientation = {
 double deltaTime;
 double currTime, lastTime;
 
+//Variable de salto 
+bool isJump=false;
+float GRAVITY=1.2;
+double tmv = 0;
+double startTimejump=0;
+
+
 // Variables animacion maquina de estados eclipse
 const float avance = 0.1;
 const float giroEclipse = 0.5f;
@@ -777,6 +784,18 @@ bool processInput(bool continueApplication) {
 	if (exitApp || glfwWindowShouldClose(window) != 0) {
 		return false;
 	}
+	if (glfwJoystickPresent(GLFW_JOYSTICK_1==GL_TRUE)){
+		std::cout<<"joystick presente" <<std::endl;
+		int axesCount, buttonCount; 
+		const float * axes=glfwGetJoystickAxes(GLFW_JOYSTICK_1, &axesCount);
+		//std::cout<<"Número de ejes disponible" << axesCount<<std::endl;
+		//std::cout <<"Stick izquierdo eje x "  << axes[0]<<std::endl;
+		//std::cout <<"Stick izquierdo eje y "  << axes[1]<<std::endl;
+		//std::cout <<" stick derecho eje x"  << axes[2]<<std::endl;
+		//std::cout <<" stick izquierdo eje y"  << axes[3]<<std::endl;
+		//std::cout <<"Trigger izquierdo"  << axes[4]<<std::endl;
+		std::cout <<"Trigger derecho"  << axes[4]<<std::endl;
+	}
 
 	if(glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
 		camera->mouseMoveCamera(offsetX, 0.0, deltaTime);
@@ -934,7 +953,12 @@ bool processInput(bool continueApplication) {
 		modelMatrixMayow = glm::translate(modelMatrixMayow, glm::vec3(0.0, 0.0, -0.02));
 		animationMayowIndex = 0;
 	}
-
+	bool keySpaceStatus=glfwGetKey(window, GLFW_KEY_SPACE)== GLFW_PRESS;
+	if (!isJump && keySpaceStatus){
+		isJump=true;
+		startTimejump=currTime;
+		tmv=0;
+	}
 	glfwPollEvents();
 	return continueApplication;
 }
@@ -1347,7 +1371,14 @@ void applicationLoop() {
 		modelMatrixMayow[0] = glm::vec4(ejex, 0.0);
 		modelMatrixMayow[1] = glm::vec4(ejey, 0.0);
 		modelMatrixMayow[2] = glm::vec4(ejez, 0.0);
-		modelMatrixMayow[3][1] = terrain.getHeightTerrain(modelMatrixMayow[3][0], modelMatrixMayow[3][2]);
+		modelMatrixMayow[3][1]=- GRAVITY *tmv*tmv+ 3.0*tmv+
+		terrain.getHeightTerrain(modelMatrixMayow[3][0], modelMatrixMayow[3][2]);
+		tmv=currTime-startTimejump; // incrementa tmv desde que inicio
+		if(modelMatrixMayow[3][1]<terrain.getHeightTerrain(modelMatrixMayow[3][0],modelMatrixMayow[3][2])){
+			isJump=false;
+			modelMatrixMayow[3][1]=terrain.getHeightTerrain(modelMatrixMayow[3][0], modelMatrixMayow[3][2]);
+		}
+		//modelMatrixMayow[3][1] = terrain.getHeightTerrain(modelMatrixMayow[3][0], modelMatrixMayow[3][2]);
 		glm::mat4 modelMatrixMayowBody = glm::mat4(modelMatrixMayow);
 		modelMatrixMayowBody = glm::scale(modelMatrixMayowBody, glm::vec3(0.021f));
 		mayowModelAnimate.setAnimationIndex(animationMayowIndex);
@@ -1369,6 +1400,8 @@ void applicationLoop() {
 		modelMatrixCyborgBody = glm::scale(modelMatrixCyborgBody, glm::vec3(0.009f));
 		cyborgModelAnimate.setAnimationIndex(1);
 		cyborgModelAnimate.render(modelMatrixCyborgBody);
+
+		
 
 		/*******************************************
 		 * Skybox

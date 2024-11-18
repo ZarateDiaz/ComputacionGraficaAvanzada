@@ -325,12 +325,12 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 
 	// Inicialización de los shaders
 	shader.initialize("../Shaders/colorShader.vs", "../Shaders/colorShader.fs");
-	shaderSkybox.initialize("../Shaders/skyBox.vs", "../Shaders/skyBox.fs");
+	/*shaderSkybox.initialize("../Shaders/skyBox.vs", "../Shaders/skyBox.fs");
 	shaderMulLighting.initialize("../Shaders/iluminacion_textura_animation.vs", "../Shaders/multipleLights.fs");
-	shaderTerrain.initialize("../Shaders/terrain.vs", "../Shaders/terrain.fs");
-	/***shaderSkybox.initialize("../Shaders/skyBox.vs", "../Shaders/skyBox_fog.fs");
+	shaderTerrain.initialize("../Shaders/terrain.vs", "../Shaders/terrain.fs");*/
+	shaderSkybox.initialize("../Shaders/skyBox.vs", "../Shaders/skyBox_fog.fs");
 	shaderMulLighting.initialize("../Shaders/iluminacion_textura_animation_fog.vs", "../Shaders/multipleLights_fog.fs");
-	shaderTerrain.initialize("../Shaders/terrain_fog.vs", "../Shaders/terrain_fog.fs");***/
+	shaderTerrain.initialize("../Shaders/terrain_fog.vs", "../Shaders/terrain_fog.fs");
 	shaderTexture.initialize("../Shaders/texturizado.vs", "../Shaders/texturizado.fs");
 
 	// Inicializacion de los objetos.
@@ -1243,9 +1243,11 @@ void applicationLoop() {
 		/*******************************************
 		 * Propiedades de neblina
 		 *******************************************/
-		/***shaderMulLighting.setVectorFloat3("fogColor", glm::value_ptr(glm::vec3(0.5, 0.5, 0.4)));
-		shaderTerrain.setVectorFloat3("fogColor", glm::value_ptr(glm::vec3(0.5, 0.5, 0.4)));
-		shaderSkybox.setVectorFloat3("fogColor", glm::value_ptr(glm::vec3(0.5, 0.5, 0.4)));***/
+		shaderMulLighting.setVectorFloat3("fogColor", glm::value_ptr(glm::vec3(1.0, 0.0, 0.0))); //se cambia color 
+		shaderMulLighting.setFloat("gradient",10.5);
+		shaderTerrain.setVectorFloat3("fogColor", glm::value_ptr(glm::vec3(1.0, 0.0, 0.0)));
+		shaderTerrain.setFloat("gradient",10.5);
+		shaderSkybox.setVectorFloat3("fogColor", glm::value_ptr(glm::vec3(1.0, 0.0, 0.0)));
 
 		/*******************************************
 		 * Propiedades Luz direccional

@@ -203,7 +203,7 @@ std::vector<float>lamp1Orientatio={
 	-17.0,-82.67,23.70
 };
 std::vector<glm::vec3>lamp2Position={
-	glm::vec3(-36.52,0,-23.24),
+	glm::vec3(-36.52,100.0,-23.24),
 	glm::vec3(-52.73,0,-3.90)
 };
 std::vector<float>lamp2Orientation={
